@@ -10,16 +10,17 @@ It is built on [PortableKit](https://github.com/TeamGDB/PortableKit), the shared
 
 ## Status
 
-The game reaches its title screen, and loops there.
+**Playable from the start of a new game**, recompiled, at full speed.
 
-It installs from a disc image, boots, draws its language screen with its text, takes a button press, loads, shows its logos and fades in the title screen. There the title keeps fading out and back in, because its music is streamed and the framework does not stream ATRAC yet. Movies are not implemented either.
+It installs from a disc image, boots, draws its language screen, shows its logos and title intro, takes START and New, and starts the game: the first scene's dialogue and the tutorial, where L and R tilt the world and the character rolls. Movies do not play yet, and nothing past the first minute of the tutorial has been tried.
 
 | | |
 | --- | --- |
 | Imports the game makes | 269 |
-| Of those, with no implementation | 76 — run with `PURUN_LIST_STUBS=1` to see them |
+| Of those, with no implementation | 68 — run with `PURUN_LIST_STUBS=1` to see them |
 | Recompiled | 19201 functions, 667264 addresses, 193 C++ units |
 | Addresses the recompiler cannot lower | the game's own 154 `break` traps, and nothing else |
+| Falls back to the interpreter | never, from boot into the tutorial (`PSPRECOMP_NO_INTERPRETER=1`) |
 
 [`docs/MISSING.md`](docs/MISSING.md) says what is in the way, most blocking first, and the [issues](https://github.com/TeamGDB/Purun/issues) are the work.
 
