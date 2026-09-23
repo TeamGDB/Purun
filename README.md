@@ -10,17 +10,17 @@ It is built on [PortableKit](https://github.com/TeamGDB/PortableKit), the shared
 
 ## Status
 
-**Playable from the start of a new game**, recompiled, at full speed.
+**The first level plays through, saves, and continues after a restart**, recompiled, at full speed.
 
-It installs from a disc image, boots, draws its language screen, shows its logos and title intro, takes START and New, and starts the game: the first scene's dialogue and the tutorial, where L and R tilt the world and the character rolls. Movies do not play yet, and nothing past the first minute of the tutorial has been tried.
+It installs from a disc image, boots, shows its logos, title intro and opening movie, and starts a new game. The first level plays to its goal, the game saves, and after a restart Continue picks up at the second level. Nothing past the start of the second level has been tried, and nobody has listened to the sound yet.
 
 | | |
 | --- | --- |
 | Imports the game makes | 269 |
-| Of those, with no implementation | 68 — run with `PURUN_LIST_STUBS=1` to see them |
+| Of those, with no implementation | 53 — run with `PURUN_LIST_STUBS=1` to see them |
 | Recompiled | 19201 functions, 667264 addresses, 193 C++ units |
 | Addresses the recompiler cannot lower | the game's own 154 `break` traps, and nothing else |
-| Falls back to the interpreter | never, from boot into the tutorial (`PSPRECOMP_NO_INTERPRETER=1`) |
+| Falls back to the interpreter | never, from boot into the first level (`PSPRECOMP_NO_INTERPRETER=1`) |
 
 [`docs/MISSING.md`](docs/MISSING.md) says what is in the way, most blocking first, and the [issues](https://github.com/TeamGDB/Purun/issues) are the work.
 
