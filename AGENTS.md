@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Working notes for anyone changing this repository: people and coding agents alike. Read this first.
+Working notes for anyone changing this repository: people and coding agents alike. Read this first; [CONTRIBUTING.md](CONTRIBUTING.md) is the short form for a first pull request.
 
 Purun is a native port of *LocoRoco 2* (the European release, `UCES-01059`), built on [PortableKit](https://github.com/TeamGDB/PortableKit). **Almost nothing lives here.** The recompiler, the kernel, the system modules, the renderer, audio, save data, ad hoc networking, the interface and the installer are all in the framework, which is the `portablekit` submodule. This repository is the profile: `host/purun_profile.cpp`, a short `CMakeLists.txt`, and the documentation for this port.
 
