@@ -10,7 +10,18 @@ It is built on [PortableKit](https://github.com/TeamGDB/PortableKit), the shared
 
 ## Status
 
-Early bring-up. [`docs/MISSING.md`](docs/MISSING.md) says how far the game gets and what is in the way, most blocking first, and the [issues](https://github.com/TeamGDB/Purun/issues) are the work.
+The game reaches its title screen, and loops there.
+
+It installs from a disc image, boots, draws its language screen with its text, takes a button press, loads, shows its logos and fades in the title screen. There the title keeps fading out and back in, because its music is streamed and the framework does not stream ATRAC yet. Movies are not implemented either.
+
+| | |
+| --- | --- |
+| Imports the game makes | 269 |
+| Of those, with no implementation | 76 — run with `PURUN_LIST_STUBS=1` to see them |
+| Recompiled | 19201 functions, 667264 addresses, 193 C++ units |
+| Addresses the recompiler cannot lower | the game's own 154 `break` traps, and nothing else |
+
+[`docs/MISSING.md`](docs/MISSING.md) says what is in the way, most blocking first, and the [issues](https://github.com/TeamGDB/Purun/issues) are the work.
 
 ## How the port is built
 
