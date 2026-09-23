@@ -14,7 +14,7 @@ Platform for everything below: macOS on Apple Silicon, Vulkan through MoltenVK.
 4. The first level, which teaches the controls as it goes: **L and R tilt the world**, L and R together jump, ○ splits the character into small ones and holding ○ brings them back together. It was played to its goal with scripted input.
 5. After the goal: a story scene, "Save Game?", then the second level.
 
-The recompiled build does all of that at **100% speed**, its frame loop at 20 frames per second, and with `PSPRECOMP_NO_INTERPRETER=1` it never falls back to the interpreter on the way. The whole executable recompiles.
+The recompiled build does all of that at **100% speed**, its frame loop at 20 frames per second (see [Frame rate](#frame-rate) below: that may be the port's doing), and with `PSPRECOMP_NO_INTERPRETER=1` it never falls back to the interpreter on the way. The whole executable recompiles.
 
 **Not verified:** anything past the start of the second level; whether 20 frames per second is the PSP's own rate for this game.
 
@@ -37,6 +37,28 @@ Each was found by running the game and reading where it stopped. All of it is in
 | The movie player (`scePsmfPlayer`) | Every movie was skipped |
 | 58 NID names | Imports the framework could not name, so could not bind |
 
+## Seen while playing
+
+Found by playing the first level by hand, on macOS on Apple Silicon. None of these has been investigated yet unless it says so.
+
+### A hole through the main character
+
+There is a hole in the middle of the main character's body. The character is drawn as a **spline surface** (GE `SPLINE`, which the renderer tessellates itself; see the table above), so the likely cause is the tessellation — the patch's knots, how its edges are clamped, or which triangles are emitted or culled in the middle — rather than the texture. Not investigated: nobody has yet traced the draw (`PURUN_TRACE_GE`) or compared the control points and the emitted triangles with what the game asks for.
+
+### Speech bubbles show seams — [#5](https://github.com/TeamGDB/Purun/issues/5)
+
+The textures of a speech bubble's pieces do not meet: a one-pixel cross and a faint outline show where the pieces join, at 2x resolution. See [Rendering](#4-rendering--5) below.
+
+### Frame rate
+
+The frame rate feels low when playing. What was measured, in a bounded run without a window or sound (`PURUN_NO_RENDER=1 PURUN_NO_AUDIO=1 PSPRECOMP_HLE_HISTOGRAM=1`, the recompiled build, from boot with no input, 6622 seconds of the game's own time; which screens it passed through was not looked at):
+
+- **The game flips exactly once every three vertical blanks**: 132309 calls to `sceDisplaySetFrameBuf` against 396924 vblanks, 3.000 each, which is 20 frames per second of the game's own time at the PSP's 59.94 Hz. `PURUN_PERF=log` agrees (`game 20.0`) even when the host runs the game at 200 times real speed, so **it is decided inside the emulated system, not by the host being too slow.**
+- **Per frame the game makes two blocking controller reads**: `sceCtrlReadBufferPositive` and `sceCtrlReadLatch`, once each (132309 and 132308 calls). PortableKit makes each of them wait for the next vblank.
+- **It also calls `sceDisplayWaitVblank` about 51 times per frame** (6733588 calls), and that call is a logging stub that returns at once. The game appears to call it in a loop until the vblank it wants; which thread makes the calls, and what else is in that loop, has not been traced. `sceDisplayGetVcount` is called once per frame.
+
+The simplest reading, not yet confirmed by a trace of the order of these calls, is that one frame is one vblank for the buffer read, one for the latch read, and one more the game waits out itself. **Whether a PSP also spends three vblanks per frame here has not been checked.** If on a PSP the two controller reads return within the same vblank, or `sceDisplayWaitVblank` waits rather than returns, this game runs faster there, and 20 is the port's doing. To settle it: count the distinct frames per second a PSP shows in the same scene (a video of the screen, stepped frame by frame), then give the port a switch that stops the latch read from waiting and see whether the game's rate changes. Implementing `sceDisplayWaitVblank` is worth doing either way; the game calls it more than any other display function.
+
 ## 1. Movies — [#2](https://github.com/TeamGDB/Purun/issues/2)
 
 **They play.** The framework now has the stock movie player (`scePsmfPlayer`), and the opening movie (`story_01.pmf`, 480x224, H.264 and ATRAC3plus) plays to its end with its sound. The game sees it finish, and stops and releases the player on its own. With audio running, pictures and sound end together. Only this one movie has been watched; the other 47 on the disc, the title demo among them, have not. Starting a movie part-way through, fast forward and rewind are not implemented; this game has not asked for them.
@@ -54,7 +76,7 @@ Measured from the port's own mix (`PURUN_AUDIO_DUMP`), not by listening: the tit
 
 ## 4. Rendering — [#5](https://github.com/TeamGDB/Purun/issues/5)
 
-Speech bubbles show a one-pixel cross and a faint outline where the pieces they are drawn from meet, at 2x resolution. Everything else seen so far draws correctly, including the tessellated character.
+Speech bubbles show a one-pixel cross and a faint outline where the pieces they are drawn from meet, at 2x resolution. The main character, a tessellated spline surface, has a hole through its middle (see [above](#a-hole-through-the-main-character)); it was first reported as drawing correctly, from the port's own frame captures, before anyone played it by hand.
 
 ## 5. The rest of the imports
 
@@ -82,6 +104,6 @@ The rest are imported but have not been called: all of `sceNetAdhocMatching` and
 
 ## 8. Not verified at all
 
-- Linux, Windows, Steam Deck.
+- Linux, Windows, Steam Deck: never built or run there.
 - Listening to the sound.
 - Ad hoc play. The ad hoc product code in the profile is a guess.
