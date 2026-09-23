@@ -32,6 +32,7 @@ Each was found by running the game and reading where it stopped. All of it is in
 | Streamed ATRAC (`sceAtracSetHalfwayBufferAndGetID`, `AddStreamData`) | The title music is one 77 MB track streamed through a 2 KiB buffer. With stubs it ended at once and the title screen restarted every few seconds ([#1](https://github.com/TeamGDB/Purun/issues/1)) |
 | `sceRtcGetCurrentTick`, `sceKernelWaitThreadEnd` | Both called on the way to the title. The stubbed tick wrote nothing, so the game read its stack as the time |
 | **Spline surfaces** (GE `SPLINE`) | **The player's character is a spline surface**, and the renderer skipped them: the game ran with its hero invisible |
+| Save-data LIST | Asked at the title; answered with a parameter error before |
 | 58 NID names | Imports the framework could not name, so could not bind |
 
 ## 1. Movies — [#2](https://github.com/TeamGDB/Purun/issues/2)
@@ -40,7 +41,7 @@ All fifteen `scePsmfPlayer` imports are stubs. The game creates a player when a 
 
 ## 2. Save data — [#3](https://github.com/TeamGDB/Purun/issues/3)
 
-At the title the game asks `sceUtilitySavedata` for **mode 11 (LIST)** of `UCES01059`/`_GameData?`, which the framework does not implement (it answers `0x80110308`), then GETSIZE for `_GameData0`. Continue asks LISTLOAD (mode 4) for `DATA.BIN`, which with no save answers "no data". Nothing has been saved yet, so whether saving works is not known.
+At the title the game asks `sceUtilitySavedata` for **mode 11 (LIST)** of `UCES01059`/`_GameData?`, then GETSIZE for `_GameData0`. LIST is implemented now (the id list's place in the parameter block was read off this request) and answers "no saves" as it should. Continue asks LISTLOAD (mode 4) for `DATA.BIN`, which with no save answers "no data". **Nothing has been saved yet**: the game saves somewhere past the start of the first level, which no run has reached, so whether saving and loading work is not known.
 
 ## 3. Rendering — [#5](https://github.com/TeamGDB/Purun/issues/5)
 
