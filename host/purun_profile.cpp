@@ -7,6 +7,7 @@
 // program headers.
 
 #include "profile.hpp"
+#include "gpu/frame_interpolation.hpp"
 
 #include "psprecomp/elf32.hpp"
 
@@ -48,6 +49,17 @@ constexpr std::array<std::uint8_t, 0x90> kKeyTable = key_table_bytes();
 
 } // namespace
 
+// The game draws its world in 2D through an orthographic projection, so
+// frame interpolation blends orthographic draws too.
+const gpu::interpolation::CutThresholds kInterpolation = [] {
+    gpu::interpolation::CutThresholds thresholds;
+    thresholds.orthographic = true;
+    // Its particles and effects come and go: about half of a frame's draws
+    // find a partner in the frame before, in the title and the first level.
+    thresholds.min_matched_fraction = 0.35f;
+    return thresholds;
+}();
+
 const GameProfile &game() {
     static const GameProfile profile{
         .app_name = "PurunNative",
@@ -86,6 +98,12 @@ const GameProfile &game() {
         // A guess: the disc id. Nothing about this game's ad hoc play is
         // known yet.
         .adhoc_product_code = "UCES01059",
+
+        // The game flips at every vblank once the pad reads stop waiting
+        // (PURUN_TRACE_PACING), and steps its world by the vblank count, so
+        // its own rate is 60; frame interpolation blends up from there.
+        .interpolation_thresholds = &kInterpolation,
+        .frame_vblanks = 1,
     };
     return profile;
 }

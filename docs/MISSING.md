@@ -14,9 +14,9 @@ Platform for everything below: macOS on Apple Silicon, Vulkan through MoltenVK.
 4. The first level, which teaches the controls as it goes: **L and R tilt the world**, L and R together jump, ○ splits the character into small ones and holding ○ brings them back together. It was played to its goal with scripted input.
 5. After the goal: a story scene, "Save Game?", then the second level.
 
-The recompiled build does all of that at **100% speed**, its frame loop at 20 frames per second (see [Frame rate](#frame-rate) below: that may be the port's doing), and with `PSPRECOMP_NO_INTERPRETER=1` it never falls back to the interpreter on the way. The whole executable recompiles.
+The recompiled build does all of that at **100% speed** and 60 frames a second (see [Frame rate](#frame-rate--fixed-60-frames-a-second) below), and with `PSPRECOMP_NO_INTERPRETER=1` it never falls back to the interpreter on the way. The whole executable recompiles.
 
-**Not verified:** anything past the start of the second level; whether 20 frames per second is the PSP's own rate for this game.
+**Not verified:** anything past the start of the second level; whether a PSP shows 60 frames a second or fewer.
 
 ### What was in the way, in order
 
@@ -39,25 +39,27 @@ Each was found by running the game and reading where it stopped. All of it is in
 
 ## Seen while playing
 
-Found by playing the first level by hand, on macOS on Apple Silicon. None of these has been investigated yet unless it says so.
+Found by playing the first level by hand, on macOS on Apple Silicon, and then traced.
 
-### A hole through the main character
+### A hole through the main character — fixed
 
-There is a hole in the middle of the main character's body. The character is drawn as a **spline surface** (GE `SPLINE`, which the renderer tessellates itself; see the table above), so the likely cause is the tessellation — the patch's knots, how its edges are clamped, or which triangles are emitted or culled in the middle — rather than the texture. Not investigated: nobody has yet traced the draw (`PURUN_TRACE_GE`) or compared the control points and the emitted triangles with what the game asks for.
+The character is one spline surface (GE `SPLINE`, 20 by 4 control points: `PURUN_TRACE_PATCHES` shows `data=0xc0414`), closed around its outline in u and open from the outline to its middle in v. PortableKit read the command's end bits the wrong way round, so the surface stopped a third of a span short of its middle point and left a hole. Fixed in PortableKit ([#27](https://github.com/TeamGDB/PortableKit/pull/27)); the body is whole in every capture of the title intro.
 
-### Speech bubbles show seams — [#5](https://github.com/TeamGDB/Purun/issues/5)
+### Speech bubbles show seams — [#5](https://github.com/TeamGDB/Purun/issues/5), fixed
 
-The textures of a speech bubble's pieces do not meet: a one-pixel cross and a faint outline show where the pieces join, at 2x resolution. See [Rendering](#4-rendering--5) below.
+The bubbles are drawn from pieces that ask for their textures to be clamped at the edge; PortableKit sampled every texture repeating, so at 2x the filter pulled in the far edge of each piece: a cross and a faint outline. PortableKit now clamps what the game asks to clamp ([#27](https://github.com/TeamGDB/PortableKit/pull/27)); the bubbles of the first story scene are seamless at 2x.
 
-### Frame rate
+### Frame rate — fixed: 60 frames a second
 
-The frame rate feels low when playing. What was measured, in a bounded run without a window or sound (`PURUN_NO_RENDER=1 PURUN_NO_AUDIO=1 PSPRECOMP_HLE_HISTOGRAM=1`, the recompiled build, from boot with no input, 6622 seconds of the game's own time; which screens it passed through was not looked at):
+The game ran at 20 frames a second. A trace of the calls that pace its frames (`PURUN_TRACE_PACING`) showed why: after each flip its main thread reads the controller buffer and then the latch, and PortableKit made each read wait for the next vblank, so a frame took three. On a PSP the buffer read waits only when no sample is new, and the latch read does not wait. With both fixed, and `sceDisplayWaitVblank` implemented (it was the "51 calls a frame": the sound thread `ptnSndTickTh` sleeps in it), **the game flips at every vblank: 59.9 frames a second of its own time, at 100% speed** ([PortableKit#25](https://github.com/TeamGDB/PortableKit/pull/25)). The game steps its world by the vblank count, so it plays at the same speed with three times the frames: captures of both builds at the same emulated times, from boot to the title logo, show the same scene.
 
-- **The game flips exactly once every three vertical blanks**: 132309 calls to `sceDisplaySetFrameBuf` against 396924 vblanks, 3.000 each, which is 20 frames per second of the game's own time at the PSP's 59.94 Hz. `PURUN_PERF=log` agrees (`game 20.0`) even when the host runs the game at 200 times real speed, so **it is decided inside the emulated system, not by the host being too slow.**
-- **Per frame the game makes two blocking controller reads**: `sceCtrlReadBufferPositive` and `sceCtrlReadLatch`, once each (132309 and 132308 calls). PortableKit makes each of them wait for the next vblank.
-- **It also calls `sceDisplayWaitVblank` about 51 times per frame** (6733588 calls), and that call is a logging stub that returns at once. The game appears to call it in a loop until the vblank it wants; which thread makes the calls, and what else is in that loop, has not been traced. `sceDisplayGetVcount` is called once per frame.
+The profile says so (`frame_vblanks = 1`), so frame interpolation starts from 60: Video > Frame rate offers 90, 120 and the display's rate, blending the game's 2D draws (`CutThresholds::orthographic`). At 120 with Vsync off it blends half of its presents, matching about 90% of the draws; **it has not been watched on a 90 or 120 Hz display**.
 
-The simplest reading, not yet confirmed by a trace of the order of these calls, is that one frame is one vblank for the buffer read, one for the latch read, and one more the game waits out itself. **Whether a PSP also spends three vblanks per frame here has not been checked.** If on a PSP the two controller reads return within the same vblank, or `sceDisplayWaitVblank` waits rather than returns, this game runs faster there, and 20 is the port's doing. To settle it: count the distinct frames per second a PSP shows in the same scene (a video of the screen, stepped frame by frame), then give the port a switch that stops the latch read from waiting and see whether the game's rate changes. Implementing `sceDisplayWaitVblank` is worth doing either way; the game calls it more than any other display function.
+**Not verified:** what a real PSP shows (30 or 60 frames a second); nobody has counted.
+
+### A black, jagged background in the first level
+
+The first level shows a large black silhouette with blurred, jagged edges behind the flowers. It may be the game's own art (the title shows the same shapes in light grey). Not investigated.
 
 ## 1. Movies — [#2](https://github.com/TeamGDB/Purun/issues/2)
 
@@ -67,30 +69,29 @@ The simplest reading, not yet confirmed by a trace of the order of these calls, 
 
 **Saving and loading work, checked by a round trip.** After the first level the game asks "Save Game?". Yes writes `PSP/SAVEDATA/UCES01059_GameData0` (LISTSAVE, 9400 bytes, encrypted as a PSP would). After a restart, Continue finds it (LIST), loads it (LISTLOAD) and the game resumes after the first level, going on into the second. **Not verified:** that a save made here loads on a PSP, or the other way round; more than one save slot.
 
-## 3. Sound
+## 3. Sound — [#6](https://github.com/TeamGDB/Purun/issues/6)
 
-Measured from the port's own mix (`PURUN_AUDIO_DUMP`), not by listening: the title music, the movie's soundtrack and the first level's sounds are all there, tonal rather than noise (spectral flatness 0.03 to 0.28 over five-second windows), at plausible levels, and the movie's sound lasts as long as its pictures. **Nobody has listened to it**, so whether it sounds right is not known. Two things to look at:
+Measured from the port's own mix, not by listening: the title music, the movie's soundtrack and the first level's sounds are all there, tonal rather than noise, at plausible levels. **Nobody has listened to it.** What changed ([PortableKit#27](https://github.com/TeamGDB/PortableKit/pull/27)):
 
-- The SAS mixer's own output reaches full scale during the first level (its per-second trace peaks at 32768), and 0.1% of samples in one five-second window of the mix are clipped. Loud effects may be distorted.
-- `__sceSasSetNoise` is a stub, and the game calls it: any effect it builds on the noise generator is silent.
+- `__sceSasSetNoise` is implemented: the game sets a dozen voices to the noise generator (clock 63 for most, 51 for one), which now plays the SPU-style noise through the voice's envelope and volume. Before, those sounds were silent.
+- The SAS voices are summed in 32 bits and clamped once, not after each voice. Some loud moments still exceed full scale: in 100 seconds of the title and attract demo, three seconds clip, 6 to 211 samples of 88576 each (`PURUN_TRACE_AUDIO`).
+- The sound thread, which sleeps in `sceDisplayWaitVblank`, now wakes once a vblank as on a PSP, not every millisecond.
 
 ## 4. Rendering — [#5](https://github.com/TeamGDB/Purun/issues/5)
 
-Speech bubbles show a one-pixel cross and a faint outline where the pieces they are drawn from meet, at 2x resolution. The main character, a tessellated spline surface, has a hole through its middle (see [above](#a-hole-through-the-main-character)); it was first reported as drawing correctly, from the port's own frame captures, before anyone played it by hand.
+The hole through the main character and the speech bubbles' seams are fixed (see [above](#seen-while-playing)). The black silhouette in the first level is not understood yet.
 
 ## 5. The rest of the imports
 
-**53 of the 269 imports** are logging stubs (68 less the fifteen of `scePsmfPlayer`; counted from the previous run's list, not by running `PURUN_LIST_STUBS=1` again). Called so far:
+**51 of the 269 imports** are logging stubs (`sceDisplayWaitVblank` and `__sceSasSetNoise` are implemented now) (68 less the fifteen of `scePsmfPlayer`; counted from the previous run's list, not by running `PURUN_LIST_STUBS=1` again). Called so far:
 
 | Call | Seen |
 | --- | --- |
 | `SysMemUserForUser 0xEBD5C3E6` | At start-up with `0x03090510`: the SDK version. Its name does not hash to any tried; harmless as a stub |
 | `sceKernelGetGPI` | At start-up |
-| `sceDisplayWaitVblank` | At start-up |
 | `sceFontGetFontList` | At start-up; the game goes on to open fonts by index regardless |
 | `sceKernelDcacheWritebackInvalidateRange` | Often; nothing to do on the host |
 | `scePower 0xEBD177D6` | At the title, with `333, 333, 166`: setting the clock. Does not hash to any name tried |
-| `__sceSasSetNoise` | During the attract demo |
 
 The rest are imported but have not been called: all of `sceNetAdhocMatching` and five of `sceNetAdhocctl` (the game's ad hoc play), eight more of `sceSasCore` (envelopes, grain), the game-sharing and screenshot dialogs, `sceIoDread`, `sceIoChstat`, thread suspend and resume, and `sceUmdWaitDriveStat`.
 

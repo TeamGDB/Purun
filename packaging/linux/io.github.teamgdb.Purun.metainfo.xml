@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.teamgdb.Purun</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Purun</name>
+  <summary>Native port of LocoRoco 2</summary>
+  <developer id="io.github.teamgdb">
+    <name>TeamGDB</name>
+  </developer>
+  <description>
+    <p>
+      Purun is a native port of LocoRoco 2 for the PSP, made by static
+      recompilation on PortableKit: the game's PSP code is translated ahead of
+      time into native code and runs on a reimplementation of the PSP system
+      software, with Vulkan graphics, gamepad support and PSP-compatible saves.
+    </p>
+    <p>
+      Purun does not include any game assets or original game files. You must
+      provide your own legally obtained copy of LocoRoco 2 (UCES-01059): the
+      first start checks that copy, accepts only that release, and sets the
+      game up from it.
+    </p>
+    <p>
+      Purun is an independent project, not affiliated with or endorsed by Sony
+      or the game's developers or publishers.
+    </p>
+  </description>
+  <launchable type="desktop-id">io.github.teamgdb.Purun.desktop</launchable>
+  <url type="homepage">https://github.com/TeamGDB/Purun</url>
+  <url type="bugtracker">https://github.com/TeamGDB/Purun/issues</url>
+  <categories>
+    <category>Game</category>
+  </categories>
+  <supports>
+    <control>gamepad</control>
+    <control>keyboard</control>
+  </supports>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="@VERSION@" date="@DATE@"/>
+  </releases>
+</component>

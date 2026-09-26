@@ -12,9 +12,9 @@ There is an interpreter too, but it is a development tool: it runs code the reco
 
 ## Status
 
-**The first level plays through, saves, and continues after a restart**, recompiled, at full speed — on macOS with Apple Silicon, the only platform it has been run on.
+**The first level plays through, saves, and continues after a restart**, recompiled, at full speed and at **60 frames a second**, the game's own rate — on macOS with Apple Silicon, the only platform it has been run on.
 
-It installs from a disc image, boots, shows its logos, title intro and opening movie, and starts a new game. The first level plays to its goal, the game saves, and after a restart Continue picks up at the second level. Nothing past the start of the second level has been tried. Known problems include a hole through the middle of the main character, seams in speech bubbles, a frame rate that looks lower than it should, and sound effects that may clip; [`docs/MISSING.md`](docs/MISSING.md) has the whole list, most blocking first, and the [issues](https://github.com/TeamGDB/Purun/issues) are the work.
+It installs from a disc image, boots, shows its logos, title intro and opening movie, and starts a new game. The first level plays to its goal, the game saves, and after a restart Continue picks up at the second level. Nothing past the start of the second level has been played through. The hole through the main character, the seams in speech bubbles and the 20 frames a second are fixed; on a display faster than 60 Hz, Video > Frame rate blends frames up to 90, 120 or the display's rate. [`docs/MISSING.md`](docs/MISSING.md) has what is still known to be wrong, most blocking first, and the [issues](https://github.com/TeamGDB/Purun/issues) are the work.
 
 | | |
 | --- | --- |
@@ -25,7 +25,11 @@ It installs from a disc image, boots, shows its logos, title intro and opening m
 | Addresses the recompiler cannot lower | the game's own 154 `break` traps, and nothing else |
 | Falls back to the interpreter | never, from boot into the first level (`PSPRECOMP_NO_INTERPRETER=1`) |
 
-## What you need
+## Playing a release
+
+A release is a macOS disk image (Apple Silicon, macOS 13 or newer) with `Purun.app` and a read-me: drag Purun into Applications, allow it once in System Settings > Privacy & Security (it is signed ad hoc, not notarized), and pick your disc image at the first start. Nothing else is needed: no build tools, no recompiling. Linux and Android releases can be packed with PortableKit's scripts but have not been made or tried yet.
+
+## What you need to build it
 
 - **The game**, as an ISO image of your own UMD disc of the European release (`UCES-01059`). Make it with your own PSP — for example with a homebrew UMD dumping tool, or a custom firmware's USB mode that exposes the disc — and copy it to your computer. Other releases are refused by the installer, which checks the disc id and the SHA-256 of the executable. Nobody here can give you a copy or tell you where to get one.
 - **Time and memory for the first build.** The recompiled game is about 190 large C++ files; compiling them takes about 40 minutes on an M1 at `-j2`, and each one needs more than a gigabyte of memory. With `ccache` installed, later builds take seconds.

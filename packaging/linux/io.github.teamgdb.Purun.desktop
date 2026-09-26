@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Purun
+GenericName=Native port of LocoRoco 2
+Comment=Play LocoRoco 2 natively from your own disc image
+Exec=purun
+Icon=io.github.teamgdb.Purun
+Terminal=false
+Categories=Game;ArcadeGame;
+Keywords=LocoRoco;PSP;recompilation;
+StartupNotify=true
