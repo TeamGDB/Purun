@@ -8,7 +8,7 @@ Platform for everything below: macOS on Apple Silicon, Vulkan through MoltenVK.
 
 **The first level can be played through, saved, and continued after a restart**, in the recompiled build at full speed. In order:
 
-1. The language screen, with its labels. ○ picks a language.
+1. The language screen, with its labels. × picks a language: the port reports a European console (English, cross confirms), so the game confirms with × and goes back with ○ in its menus, and a gamepad's bottom button confirms by default.
 2. The publisher and studio logos, then the title intro: the characters, the scenery, the logo.
 3. START opens the title menu, **New** and **Continue**. New plays the opening movie and starts the game.
 4. The first level, which teaches the controls as it goes: **L and R tilt the world**, L and R together jump, ○ splits the character into small ones and holding ○ brings them back together. It was played to its goal with scripted input.
