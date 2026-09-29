@@ -93,6 +93,7 @@ Every switch takes the `PURUN_` prefix, so Purun runs beside another port withou
 | `PURUN_TILT=1`, `PURUN_TILT_MODE=angle\|rate\|horizon`, `PURUN_TILT_FULL`, `PURUN_TILT_DEAD_ZONE` | Tilt controls for this run, overriding the menu (see below) |
 | `PURUN_TILT_DECK=0` | Do not read a Steam Deck's motion sensors directly |
 | `PURUN_TILT_LEVEL_FROM=device` | Angle + level horizon turns the picture against the device's roll, keeping the game's horizon level with the real one, as it first did |
+| `PURUN_STALL_WATCHDOG=0` | Turn off the stall watchdog, which writes every emulated thread's state to the log when the game has drawn nothing for 5 s outside the menu (`=N` waits N seconds) |
 | `PURUN_TRACE_TILT` | Log the device's roll, its neutral and what it presses (`PURUN_TRACE_PAD` includes it) |
 
 ### Tilt controls
