@@ -91,6 +91,7 @@ Every switch takes the `PURUN_` prefix, so Purun runs beside another port withou
 | `PURUN_TRACE_*` | Log one subsystem: `GE`, `KERNEL`, `IO`, `SAVEDATA`, `AUDIO`, `ATRAC`, `MPEG`, `PAD`, `FONT` and more |
 | `PSPRECOMP_NO_INTERPRETER=1` | Stop instead of falling back to the interpreter, naming the address |
 | `PURUN_TILT=1`, `PURUN_TILT_MODE=angle\|level\|rate`, `PURUN_TILT_FULL`, `PURUN_TILT_DEAD_ZONE` | Tilt controls for this run, overriding the menu (see below) |
+| `PURUN_TILT_DECK=0` | Do not read a Steam Deck's motion sensors directly |
 | `PURUN_TRACE_TILT` | Log the device's roll, its neutral and what it presses (`PURUN_TRACE_PAD` includes it) |
 
 ### Tilt controls
@@ -111,12 +112,10 @@ Where the motion comes from, which the log names at start (`[tilt] ...`) and the
 
 - **A gamepad** with motion sensors, through SDL: DualShock 4, DualSense, Switch Pro and others SDL reads the gyroscope of.
 - **A phone or tablet**: its own accelerometer and gyroscope, when no gamepad with sensors is connected, turned with the screen.
-- **A Steam Deck.** Under Steam Input the game only sees Steam's virtual pad, which has no motion sensors (the log says so). Either:
-  - leave Steam Input on and let Steam turn the gyroscope into buttons in Purun's controller layout. No code is involved, but the layout has to end on **L and R**: the stick does not tilt LocoRoco's world, so a plain gyro-to-joystick mapping does nothing; or
-  - turn Steam Input off for the Purun shortcut (Properties > Controller > *Disable Steam Input*), so SDL's own Steam Deck driver opens the Deck's controls and their gyroscope, and turn Tilt with motion on. The log then shows `[tilt] Steam Deck: gyroscope and accelerometer`.
+- **A Steam Deck**, whether Steam Input is on or off for Purun. Under Steam Input the game gets Steam's virtual pad, which has no motion sensors, so the Deck's gyroscope and accelerometer are read straight from its controller beside Steam; the buttons still come through Steam. Steam keeps the motion sensors off while a game's layout does not use them, so Purun switches them on while Tilt with motion is on and back off afterwards. The log shows `[tilt] Steam Deck controller /dev/hidrawN: reading its gyroscope and accelerometer beside Steam Input`, and the menu `Steam Deck: gyroscope and accelerometer`. `PURUN_TILT_DECK=0` leaves the controller alone. Leave the gyroscope unmapped (*None*) in Purun's Steam controller layout, or Steam turns tilting into input of its own as well.
 - **A computer** has none, and with a pad without sensors tilt controls do nothing.
 
-Tilt controls have been tried only with synthetic sensor data (the input script's `tilt` and `gyro` steps) on macOS, not yet on a real gamepad, phone or Steam Deck.
+Tilt controls have been tried with synthetic sensor data (the input script's `tilt` and `gyro` steps) on macOS. On a Steam Deck the sensor readings were checked outside the game; tilting in the game has not been tried yet, nor on a real gamepad or phone.
 
 ## Reporting bugs
 
