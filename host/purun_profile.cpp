@@ -104,6 +104,14 @@ const GameProfile &game() {
         // its own rate is 60; frame interpolation blends up from there.
         .interpolation_thresholds = &kInterpolation,
         .frame_vblanks = 1,
+
+        // A European console: English, and cross confirms. The game reads
+        // both through sceUtilityGetSystemParamInt (ids 8 and 9) and hands
+        // them to sceImposeSetLanguageMode, so with the framework's Japanese
+        // default it asked for circle and its prompts showed ○ to confirm
+        // (PURUN_TRACE_KERNEL, "[sysparam]").
+        .system_language = 1u,
+        .confirm_button = 1u,
     };
     return profile;
 }
