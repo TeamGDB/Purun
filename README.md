@@ -90,6 +90,33 @@ Every switch takes the `PURUN_` prefix, so Purun runs beside another port withou
 | `PURUN_LIST_STUBS=1` | List the system calls the game imports that nothing implements |
 | `PURUN_TRACE_*` | Log one subsystem: `GE`, `KERNEL`, `IO`, `SAVEDATA`, `AUDIO`, `ATRAC`, `MPEG`, `PAD`, `FONT` and more |
 | `PSPRECOMP_NO_INTERPRETER=1` | Stop instead of falling back to the interpreter, naming the address |
+| `PURUN_TILT=1`, `PURUN_TILT_MODE=angle\|level\|rate`, `PURUN_TILT_FULL`, `PURUN_TILT_DEAD_ZONE` | Tilt controls for this run, overriding the menu (see below) |
+| `PURUN_TRACE_TILT` | Log the device's roll, its neutral and what it presses (`PURUN_TRACE_PAD` includes it) |
+
+### Tilt controls
+
+LocoRoco is played by tilting the world: hold L or R to tilt it, both to jump. With **Controls > Tilt controls > Tilt with motion** on, tilting the device does the same: a gamepad with a gyroscope (DualShock 4, DualSense, Switch Pro, a Steam Deck), or a phone itself. The buttons keep working; a shoulder button you press takes over from the tilt, so a tilt never turns into an accidental jump, and jumping stays on L and R together. It is off by default.
+
+| Setting (settings.ini) | Default | What it does |
+| --- | --- | --- |
+| Tilt with motion (`input.tilt`) | Off | Tilt the world by tilting the device |
+| Gyro mode (`input.tilt_mode`) | Angle | **Angle**: how far the device is rolled from its neutral position tilts the world, the picture untouched. **Angle + level horizon** (`level`, experimental): the same, and the picture is turned against the device and zoomed just enough to cover the screen, so the game's horizon stays level with the real one on a handheld; the port's menu and overlays stay upright. Turning pictures can cause motion sickness. **Rate**: turning the device tilts, and the tilt stays when the turning stops and fades over a few seconds; turning slower than 20° a second adds nothing, so the device can go back to a comfortable hold |
+| Full tilt at (`input.tilt_full`) | 12° | Sensitivity: the roll for the world's full tilt. Between the dead zone and this, L or R is pressed for part of the frames, which the game turns into part of its tilt |
+| Tilt dead zone (`input.tilt_dead_zone`) | 4° | Roll before anything happens; the button lets go 1.5° inside it, so a hand at the edge does not flicker |
+| Invert tilt (`input.tilt_invert`) | Off | Rolling left tilts right |
+| Level horizon limit (`input.tilt_level_limit`) | 10° | How far Angle + level horizon turns the picture at most; the further it turns, the more it is zoomed and cropped |
+| Re-centre tilt | | Makes the current hold neutral. It also happens when the game starts, when the menu closes, and with **R3** on a gamepad |
+
+Where the motion comes from, which the log names at start (`[tilt] ...`) and the menu shows under *Motion from*:
+
+- **A gamepad** with motion sensors, through SDL: DualShock 4, DualSense, Switch Pro and others SDL reads the gyroscope of.
+- **A phone or tablet**: its own accelerometer and gyroscope, when no gamepad with sensors is connected, turned with the screen.
+- **A Steam Deck.** Under Steam Input the game only sees Steam's virtual pad, which has no motion sensors (the log says so). Either:
+  - leave Steam Input on and let Steam turn the gyroscope into buttons in Purun's controller layout. No code is involved, but the layout has to end on **L and R**: the stick does not tilt LocoRoco's world, so a plain gyro-to-joystick mapping does nothing; or
+  - turn Steam Input off for the Purun shortcut (Properties > Controller > *Disable Steam Input*), so SDL's own Steam Deck driver opens the Deck's controls and their gyroscope, and turn Tilt with motion on. The log then shows `[tilt] Steam Deck: gyroscope and accelerometer`.
+- **A computer** has none, and with a pad without sensors tilt controls do nothing.
+
+Tilt controls have been tried only with synthetic sensor data (the input script's `tilt` and `gyro` steps) on macOS, not yet on a real gamepad, phone or Steam Deck.
 
 ## Reporting bugs
 

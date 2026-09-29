@@ -47,6 +47,21 @@ constexpr std::array<std::uint8_t, 0x90> key_table_bytes() {
 
 constexpr std::array<std::uint8_t, 0x90> kKeyTable = key_table_bytes();
 
+// LocoRoco tilts its world with L and R, and jumps with both. Traced
+// (PURUN_TRACE_PAD, and the pad reader at 0x08A37DD4): every frame the game
+// reads one sample of the buffer and the latch, keeps the held buttons, the
+// presses and releases and the stick, and its play tests L (0x100) and R
+// (0x200) as held bits. Holding one eases the world towards that side and
+// letting go eases it back, so pressing for part of the frames tilts it part
+// of the way: tried at a half and a quarter of the frames, the world leaned
+// visibly less than with the button held. The stick does not tilt the world.
+constexpr TiltControls kTilt{
+    .left = 0x0100u,
+    .right = 0x0200u,
+    .proportional = true,
+    .note = "Jump as always with L and R together.",
+};
+
 } // namespace
 
 // The game draws its world in 2D through an orthographic projection, so
@@ -102,6 +117,9 @@ const GameProfile &game() {
         // The game flips at every vblank once the pad reads stop waiting
         // (PURUN_TRACE_PACING), and steps its world by the vblank count, so
         // its own rate is 60; frame interpolation blends up from there.
+        // Tilting the device tilts the world (Controls > Tilt controls).
+        .tilt = &kTilt,
+
         .interpolation_thresholds = &kInterpolation,
         .frame_vblanks = 1,
     };
