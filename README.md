@@ -92,6 +92,7 @@ Every switch takes the `PURUN_` prefix, so Purun runs beside another port withou
 | `PSPRECOMP_NO_INTERPRETER=1` | Stop instead of falling back to the interpreter, naming the address |
 | `PURUN_TILT=1`, `PURUN_TILT_MODE=angle\|level\|rate`, `PURUN_TILT_FULL`, `PURUN_TILT_DEAD_ZONE` | Tilt controls for this run, overriding the menu (see below) |
 | `PURUN_TILT_DECK=0` | Do not read a Steam Deck's motion sensors directly |
+| `PURUN_TILT_LEVEL_FROM=device` | Angle + level horizon turns the picture against the device's roll, keeping the game's horizon level with the real one, as it first did |
 | `PURUN_TRACE_TILT` | Log the device's roll, its neutral and what it presses (`PURUN_TRACE_PAD` includes it) |
 
 ### Tilt controls
@@ -101,11 +102,11 @@ LocoRoco is played by tilting the world: hold L or R to tilt it, both to jump. W
 | Setting (settings.ini) | Default | What it does |
 | --- | --- | --- |
 | Tilt with motion (`input.tilt`) | Off | Tilt the world by tilting the device |
-| Gyro mode (`input.tilt_mode`) | Angle | **Angle**: how far the device is rolled from its neutral position tilts the world, the picture untouched. **Angle + level horizon** (`level`, experimental): the same, and the picture is turned against the device and zoomed just enough to cover the screen, so the game's horizon stays level with the real one on a handheld; the port's menu and overlays stay upright. Turning pictures can cause motion sickness. **Rate**: turning the device tilts, and the tilt stays when the turning stops and fades over a few seconds; turning slower than 20° a second adds nothing, so the device can go back to a comfortable hold |
+| Gyro mode (`input.tilt_mode`) | Angle | **Angle**: how far the device is rolled from its neutral position tilts the world, the picture untouched. **Angle + level horizon** (`level`, experimental): the same, and the picture is turned back against the game's own tilt of its world and zoomed just enough to cover the screen, so the ground stays still on the screen and the device held tilted is the tilted world; the port's menu and overlays stay upright. Turning pictures can cause motion sickness. **Rate**: turning the device tilts, and the tilt stays when the turning stops and fades over a few seconds; turning slower than 20° a second adds nothing, so the device can go back to a comfortable hold |
 | Full tilt at (`input.tilt_full`) | 12° | Sensitivity: the roll for the world's full tilt. Between the dead zone and this, L or R is pressed for part of the frames, which the game turns into part of its tilt |
 | Tilt dead zone (`input.tilt_dead_zone`) | 4° | Roll before anything happens; the button lets go 1.5° inside it, so a hand at the edge does not flicker |
 | Invert tilt (`input.tilt_invert`) | Off | Rolling left tilts right |
-| Level horizon limit (`input.tilt_level_limit`) | 10° | How far Angle + level horizon turns the picture at most; the further it turns, the more it is zoomed and cropped |
+| Level horizon limit (`input.tilt_level_limit`) | 10° | How far Angle + level horizon turns the picture at most, up to 30°; LocoRoco's world tilts up to 30°, so past the limit the ground turns on the screen again. The further it turns, the more it is zoomed and cropped |
 | Re-centre tilt | | Makes the current hold neutral. It also happens when the game starts, when the menu closes, and with **R3** on a gamepad |
 
 Where the motion comes from, which the log names at start (`[tilt] ...`) and the menu shows under *Motion from*:
