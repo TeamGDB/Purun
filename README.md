@@ -90,7 +90,7 @@ Every switch takes the `PURUN_` prefix, so Purun runs beside another port withou
 | `PURUN_LIST_STUBS=1` | List the system calls the game imports that nothing implements |
 | `PURUN_TRACE_*` | Log one subsystem: `GE`, `KERNEL`, `IO`, `SAVEDATA`, `AUDIO`, `ATRAC`, `MPEG`, `PAD`, `FONT` and more |
 | `PSPRECOMP_NO_INTERPRETER=1` | Stop instead of falling back to the interpreter, naming the address |
-| `PURUN_TILT=1`, `PURUN_TILT_MODE=angle\|level\|rate`, `PURUN_TILT_FULL`, `PURUN_TILT_DEAD_ZONE` | Tilt controls for this run, overriding the menu (see below) |
+| `PURUN_TILT=1`, `PURUN_TILT_MODE=angle\|rate\|horizon`, `PURUN_TILT_FULL`, `PURUN_TILT_DEAD_ZONE` | Tilt controls for this run, overriding the menu (see below) |
 | `PURUN_TILT_DECK=0` | Do not read a Steam Deck's motion sensors directly |
 | `PURUN_TILT_LEVEL_FROM=device` | Angle + level horizon turns the picture against the device's roll, keeping the game's horizon level with the real one, as it first did |
 | `PURUN_TRACE_TILT` | Log the device's roll, its neutral and what it presses (`PURUN_TRACE_PAD` includes it) |
@@ -102,12 +102,16 @@ LocoRoco is played by tilting the world: hold L or R to tilt it, both to jump. W
 | Setting (settings.ini) | Default | What it does |
 | --- | --- | --- |
 | Tilt with motion (`input.tilt`) | Off | Tilt the world by tilting the device |
-| Gyro mode (`input.tilt_mode`) | Angle | **Angle**: how far the device is rolled from its neutral position tilts the world, the picture untouched. **Angle + level horizon** (`level`, experimental): the same, and the picture is turned back against the game's own tilt of its world and zoomed just enough to cover the screen, so the ground stays still on the screen and the device held tilted is the tilted world; the port's menu and overlays stay upright. Turning pictures can cause motion sickness. **Rate**: turning the device tilts, and the tilt stays when the turning stops and fades over a few seconds; turning slower than 20° a second adds nothing, so the device can go back to a comfortable hold |
+| Gyro mode (`input.tilt_mode`) | Angle | **Angle**: how far the device is rolled from its neutral position tilts the world, the picture untouched. **Rate**: turning the device tilts, and the tilt stays when the turning stops and fades over a few seconds; turning slower than 20° a second adds nothing, so the device can go back to a comfortable hold |
 | Full tilt at (`input.tilt_full`) | 12° | Sensitivity: the roll for the world's full tilt. Between the dead zone and this, L or R is pressed for part of the frames, which the game turns into part of its tilt |
 | Tilt dead zone (`input.tilt_dead_zone`) | 4° | Roll before anything happens; the button lets go 1.5° inside it, so a hand at the edge does not flicker |
 | Invert tilt (`input.tilt_invert`) | Off | Rolling left tilts right |
-| Level horizon limit (`input.tilt_level_limit`) | 10° | How far Angle + level horizon turns the picture at most, up to 30°; LocoRoco's world tilts up to 30°, so past the limit the ground turns on the screen again. The further it turns, the more it is zoomed and cropped |
+| Jump button (`input.jump_button`) | L3 | One gamepad button that presses L and R together while held: `l3` (the left stick's click), `south`, `east`, `west`, `north` or `off`. L3 takes nothing from the game, which has no stick click; LocoRoco 2 reads every face button somewhere (○ next to L and R in its play code, × as its confirm button, △ and □ with START and SELECT), and a face button chosen here no longer presses its own button. The keyboard's **Jump** is under Keyboard and mouse, unbound by default |
 | Re-centre tilt | | Makes the current hold neutral. It also happens when the game starts, when the menu closes, and with **R3** on a gamepad |
+
+Jumping with tilt controls on: L and R pressed together, the jump button or the keyboard's Jump always reach the game as both, whatever the device's roll. A single shoulder button tilts that way on its own and the motion waits until it is released.
+
+**Angle + level horizon** is no longer in the menu: it did not play well. `PURUN_TILT_MODE=horizon` (or `input.tilt_mode=level` in settings.ini) still turns it on: the picture is turned back against the game's own tilt, up to `input.tilt_level_limit` degrees (10 by default, at most 30), so the ground stays still on the screen. The menu shows it by name and leaves it for Angle or Rate.
 
 Where the motion comes from, which the log names at start (`[tilt] ...`) and the menu shows under *Motion from*:
 

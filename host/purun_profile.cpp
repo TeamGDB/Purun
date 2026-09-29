@@ -59,7 +59,7 @@ constexpr TiltControls kTilt{
     .left = 0x0100u,
     .right = 0x0200u,
     .proportional = true,
-    .note = "Jump as always with L and R together.",
+    .note = "Jump as always with L and R together, or with the Jump button below.",
 };
 
 } // namespace
