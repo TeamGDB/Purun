@@ -62,6 +62,38 @@ constexpr TiltControls kTilt{
     .note = "Jump as always with L and R together, or with the Jump button below.",
 };
 
+// The keyboard for a game played by tilting, without a camera: both hands
+// tilt (A and D, or the arrows), Space jumps, Shift bursts the LocoRoco apart
+// and gathers them again (○ held), Enter confirms (×, as the port's European
+// confirm), and the mouse is left free. The game's menus and map read the
+// D-pad, the stick and held L and R in the same handler (its pad accessors at
+// 0x08A37F3C/48/78/88, called one after another around 0x0890DA18), so the
+// arrows' Left and Right, which tilt, still move there, and Up and Down, W
+// and S, are the D-pad. Q and E are the D-pad's Left and Right for a menu
+// that wants them.
+void keyboard_defaults(input::Bindings &b, bool &mouse) {
+    using input::Action;
+    const auto set = [&](Action action, const char *first, const char *second = nullptr) {
+        b[static_cast<std::size_t>(action)] = {input::from_name(first),
+                                               second != nullptr ? input::from_name(second) : input::kNone};
+    };
+    for (input::Slots &slots : b) slots = {input::kNone, input::kNone};
+    set(Action::L, "Left", "A");
+    set(Action::R, "Right", "D");
+    set(Action::Jump, "Space");
+    set(Action::Circle, "Left Shift", "Right Shift");
+    set(Action::Cross, "Enter", "Z");
+    set(Action::Triangle, "C");
+    set(Action::Square, "X");
+    set(Action::Start, "Tab", "P");
+    set(Action::Select, "Backspace");
+    set(Action::Up, "Up", "W");
+    set(Action::Down, "Down", "S");
+    set(Action::Left, "Q");
+    set(Action::Right, "E");
+    mouse = false;
+}
+
 } // namespace
 
 // The game draws its world in 2D through an orthographic projection, so
@@ -119,6 +151,7 @@ const GameProfile &game() {
         // its own rate is 60; frame interpolation blends up from there.
         // Tilting the device tilts the world (Controls > Tilt controls).
         .tilt = &kTilt,
+        .keyboard_defaults = keyboard_defaults,
 
         .interpolation_thresholds = &kInterpolation,
         .frame_vblanks = 1,
