@@ -102,16 +102,15 @@ Purun starts with a keyboard for tilting, not the framework's W A S D and mouse 
 
 | Control | Keys |
 | --- | --- |
-| Tilt left (L), tilt right (R) | Left arrow or A, Right arrow or D |
+| D-pad | the arrow keys |
+| Tilt left (L), tilt right (R) | A or Q, D or E |
 | Jump (L and R together) | Space |
 | ○ (burst apart, gather again) | Left Shift or Right Shift |
 | × (confirm) | Enter or Z |
 | △, □ | C, X |
 | START, SELECT | Tab or P, Backspace |
-| D-pad up, down | Up arrow or W, Down arrow or S |
-| D-pad left, right | Q, E |
 
-The game's menus and map take the D-pad, the stick and L and R alike, so the arrows move there too. Every key can be changed under **Controls > Keyboard and mouse**, and a binding already in `settings.ini` stays as it is: only controls the file does not name start from these, and never with a key another control already has there.
+The stick is not bound: the game's menus and map take the D-pad as well, and the stick does not tilt the world. Every key can be changed under **Controls > Keyboard and mouse**, and a binding already in `settings.ini` stays as it is: only controls the file does not name start from these, and never with a key another control already has there.
 
 ### Tilt controls
 
