@@ -96,6 +96,23 @@ Every switch takes the `PURUN_` prefix, so Purun runs beside another port withou
 | `PURUN_STALL_WATCHDOG=0` | Turn off the stall watchdog, which writes every emulated thread's state to the log when the game has drawn nothing for 5 s outside the menu (`=N` waits N seconds) |
 | `PURUN_TRACE_TILT` | Log the device's roll, its neutral and what it presses (`PURUN_TRACE_PAD` includes it) |
 
+### Keyboard
+
+Purun starts with a keyboard for tilting, not the framework's W A S D and mouse camera (LocoRoco has no camera, so the mouse is off):
+
+| Control | Keys |
+| --- | --- |
+| Tilt left (L), tilt right (R) | Left arrow or A, Right arrow or D |
+| Jump (L and R together) | Space |
+| ○ (burst apart, gather again) | Left Shift or Right Shift |
+| × (confirm) | Enter or Z |
+| △, □ | C, X |
+| START, SELECT | Tab or P, Backspace |
+| D-pad up, down | Up arrow or W, Down arrow or S |
+| D-pad left, right | Q, E |
+
+The game's menus and map take the D-pad, the stick and L and R alike, so the arrows move there too. Every key can be changed under **Controls > Keyboard and mouse**, and a binding already in `settings.ini` stays as it is: only controls the file does not name start from these, and never with a key another control already has there.
+
 ### Tilt controls
 
 LocoRoco is played by tilting the world: hold L or R to tilt it, both to jump. With **Controls > Tilt controls > Tilt with motion** on, tilting the device does the same: a gamepad with a gyroscope (DualShock 4, DualSense, Switch Pro, a Steam Deck), or a phone itself. The buttons keep working; a shoulder button you press takes over from the tilt, so a tilt never turns into an accidental jump, and jumping stays on L and R together. It is off by default.
@@ -107,7 +124,7 @@ LocoRoco is played by tilting the world: hold L or R to tilt it, both to jump. W
 | Full tilt at (`input.tilt_full`) | 12° | Sensitivity: the roll for the world's full tilt. Between the dead zone and this, L or R is pressed for part of the frames, which the game turns into part of its tilt |
 | Tilt dead zone (`input.tilt_dead_zone`) | 4° | Roll before anything happens; the button lets go 1.5° inside it, so a hand at the edge does not flicker |
 | Invert tilt (`input.tilt_invert`) | Off | Rolling left tilts right |
-| Jump button (`input.jump_button`) | L3 | One gamepad button that presses L and R together while held: `l3` (the left stick's click), `south`, `east`, `west`, `north` or `off`. L3 takes nothing from the game, which has no stick click; LocoRoco 2 reads every face button somewhere (○ next to L and R in its play code, × as its confirm button, △ and □ with START and SELECT), and a face button chosen here no longer presses its own button. The keyboard's **Jump** is under Keyboard and mouse, unbound by default |
+| Jump button (`input.jump_button`) | L3 | One gamepad button that presses L and R together while held: `l3` (the left stick's click), `south`, `east`, `west`, `north` or `off`. L3 takes nothing from the game, which has no stick click; LocoRoco 2 reads every face button somewhere (○ next to L and R in its play code, × as its confirm button, △ and □ with START and SELECT), and a face button chosen here no longer presses its own button. The keyboard's **Jump** is Space (Keyboard and mouse) |
 | Re-centre tilt | | Makes the current hold neutral. It also happens when the game starts, when the menu closes, and with **R3** on a gamepad |
 
 Jumping with tilt controls on: L and R pressed together, the jump button or the keyboard's Jump always reach the game as both, whatever the device's roll. A single shoulder button tilts that way on its own and the motion waits until it is released.
