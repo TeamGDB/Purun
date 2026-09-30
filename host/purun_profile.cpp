@@ -62,15 +62,14 @@ constexpr TiltControls kTilt{
     .note = "Jump as always with L and R together, or with the Jump button below.",
 };
 
-// The keyboard for a game played by tilting, without a camera: both hands
-// tilt (A and D, or the arrows), Space jumps, Shift bursts the LocoRoco apart
-// and gathers them again (○ held), Enter confirms (×, as the port's European
-// confirm), and the mouse is left free. The game's menus and map read the
-// D-pad, the stick and held L and R in the same handler (its pad accessors at
-// 0x08A37F3C/48/78/88, called one after another around 0x0890DA18), so the
-// arrows' Left and Right, which tilt, still move there, and Up and Down, W
-// and S, are the D-pad. Q and E are the D-pad's Left and Right for a menu
-// that wants them.
+// The keyboard for a game played by tilting, without a camera: the arrows
+// are the D-pad, as on a PSP, and the shoulders are the letters beside them
+// on the left hand (L on A or Q, R on D or E), Space jumps, Shift bursts the
+// LocoRoco apart and gathers them again (○ held), Enter confirms (×, as the
+// port's European confirm), and the mouse is left free. The stick is not
+// bound: the game's menus and map read the D-pad in the same handler as the
+// stick (its pad accessors at 0x08A37F3C/48/78/88, called one after another
+// around 0x0890DA18), and the stick does not tilt the world.
 void keyboard_defaults(input::Bindings &b, bool &mouse) {
     using input::Action;
     const auto set = [&](Action action, const char *first, const char *second = nullptr) {
@@ -78,8 +77,8 @@ void keyboard_defaults(input::Bindings &b, bool &mouse) {
                                                second != nullptr ? input::from_name(second) : input::kNone};
     };
     for (input::Slots &slots : b) slots = {input::kNone, input::kNone};
-    set(Action::L, "Left", "A");
-    set(Action::R, "Right", "D");
+    set(Action::L, "A", "Q");
+    set(Action::R, "D", "E");
     set(Action::Jump, "Space");
     set(Action::Circle, "Left Shift", "Right Shift");
     set(Action::Cross, "Enter", "Z");
@@ -87,10 +86,10 @@ void keyboard_defaults(input::Bindings &b, bool &mouse) {
     set(Action::Square, "X");
     set(Action::Start, "Tab", "P");
     set(Action::Select, "Backspace");
-    set(Action::Up, "Up", "W");
-    set(Action::Down, "Down", "S");
-    set(Action::Left, "Q");
-    set(Action::Right, "E");
+    set(Action::Up, "Up");
+    set(Action::Down, "Down");
+    set(Action::Left, "Left");
+    set(Action::Right, "Right");
     mouse = false;
 }
 
