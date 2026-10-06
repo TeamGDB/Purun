@@ -47,6 +47,52 @@ constexpr std::array<std::uint8_t, 0x90> key_table_bytes() {
 
 constexpr std::array<std::uint8_t, 0x90> kKeyTable = key_table_bytes();
 
+// LocoRoco tilts its world with L and R, and jumps with both. Traced
+// (PURUN_TRACE_PAD, and the pad reader at 0x08A37DD4): every frame the game
+// reads one sample of the buffer and the latch, keeps the held buttons, the
+// presses and releases and the stick, and its play tests L (0x100) and R
+// (0x200) as held bits. Holding one eases the world towards that side and
+// letting go eases it back, so pressing for part of the frames tilts it part
+// of the way: tried at a half and a quarter of the frames, the world leaned
+// visibly less than with the button held. The stick does not tilt the world.
+constexpr TiltControls kTilt{
+    .left = 0x0100u,
+    .right = 0x0200u,
+    .proportional = true,
+    .note = "Jump as always with L and R together, or with the Jump button below.",
+};
+
+// The keyboard for a game played by tilting, without a camera: the arrows
+// are the D-pad, as on a PSP, and the shoulders are the letters beside them
+// on the left hand (L on A or Q, R on D or E), Space jumps, Shift bursts the
+// LocoRoco apart and gathers them again (○ held), Enter confirms (×, as the
+// port's European confirm), and the mouse is left free. The stick is not
+// bound: the game's menus and map read the D-pad in the same handler as the
+// stick (its pad accessors at 0x08A37F3C/48/78/88, called one after another
+// around 0x0890DA18), and the stick does not tilt the world.
+void keyboard_defaults(input::Bindings &b, bool &mouse) {
+    using input::Action;
+    const auto set = [&](Action action, const char *first, const char *second = nullptr) {
+        b[static_cast<std::size_t>(action)] = {input::from_name(first),
+                                               second != nullptr ? input::from_name(second) : input::kNone};
+    };
+    for (input::Slots &slots : b) slots = {input::kNone, input::kNone};
+    set(Action::L, "A", "Q");
+    set(Action::R, "D", "E");
+    set(Action::Jump, "Space");
+    set(Action::Circle, "Left Shift", "Right Shift");
+    set(Action::Cross, "Enter", "Z");
+    set(Action::Triangle, "C");
+    set(Action::Square, "X");
+    set(Action::Start, "Tab", "P");
+    set(Action::Select, "Backspace");
+    set(Action::Up, "Up");
+    set(Action::Down, "Down");
+    set(Action::Left, "Left");
+    set(Action::Right, "Right");
+    mouse = false;
+}
+
 } // namespace
 
 // The game draws its world in 2D through an orthographic projection, so
@@ -102,6 +148,10 @@ const GameProfile &game() {
         // The game flips at every vblank once the pad reads stop waiting
         // (PURUN_TRACE_PACING), and steps its world by the vblank count, so
         // its own rate is 60; frame interpolation blends up from there.
+        // Tilting the device tilts the world (Controls > Tilt controls).
+        .tilt = &kTilt,
+        .keyboard_defaults = keyboard_defaults,
+
         .interpolation_thresholds = &kInterpolation,
         .frame_vblanks = 1,
     };

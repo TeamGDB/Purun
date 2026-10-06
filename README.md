@@ -90,6 +90,54 @@ Every switch takes the `PURUN_` prefix, so Purun runs beside another port withou
 | `PURUN_LIST_STUBS=1` | List the system calls the game imports that nothing implements |
 | `PURUN_TRACE_*` | Log one subsystem: `GE`, `KERNEL`, `IO`, `SAVEDATA`, `AUDIO`, `ATRAC`, `MPEG`, `PAD`, `FONT` and more |
 | `PSPRECOMP_NO_INTERPRETER=1` | Stop instead of falling back to the interpreter, naming the address |
+| `PURUN_TILT=1`, `PURUN_TILT_MODE=angle\|rate\|horizon`, `PURUN_TILT_FULL`, `PURUN_TILT_DEAD_ZONE` | Tilt controls for this run, overriding the menu (see below) |
+| `PURUN_TILT_DECK=0` | Do not read a Steam Deck's motion sensors directly |
+| `PURUN_TILT_LEVEL_FROM=device` | Angle + level horizon turns the picture against the device's roll, keeping the game's horizon level with the real one, as it first did |
+| `PURUN_STALL_WATCHDOG=0` | Turn off the stall watchdog, which writes every emulated thread's state to the log when the game has drawn nothing for 5 s outside the menu (`=N` waits N seconds) |
+| `PURUN_TRACE_TILT` | Log the device's roll, its neutral and what it presses (`PURUN_TRACE_PAD` includes it) |
+
+### Keyboard
+
+Purun starts with a keyboard for tilting, not the framework's W A S D and mouse camera (LocoRoco has no camera, so the mouse is off):
+
+| Control | Keys |
+| --- | --- |
+| D-pad | the arrow keys |
+| Tilt left (L), tilt right (R) | A or Q, D or E |
+| Jump (L and R together) | Space |
+| ○ (burst apart, gather again) | Left Shift or Right Shift |
+| × (confirm) | Enter or Z |
+| △, □ | C, X |
+| START, SELECT | Tab or P, Backspace |
+
+The stick is not bound: the game's menus and map take the D-pad as well, and the stick does not tilt the world. Every key can be changed under **Controls > Keyboard and mouse**, and a binding already in `settings.ini` stays as it is: only controls the file does not name start from these, and never with a key another control already has there.
+
+### Tilt controls
+
+LocoRoco is played by tilting the world: hold L or R to tilt it, both to jump. With **Controls > Tilt controls > Tilt with motion** on, tilting the device does the same: a gamepad with a gyroscope (DualShock 4, DualSense, Switch Pro, a Steam Deck), or a phone itself. The buttons keep working; a shoulder button you press takes over from the tilt, so a tilt never turns into an accidental jump, and jumping stays on L and R together. It is off by default.
+
+| Setting (settings.ini) | Default | What it does |
+| --- | --- | --- |
+| Tilt with motion (`input.tilt`) | Off | Tilt the world by tilting the device |
+| Gyro mode (`input.tilt_mode`) | Angle | **Angle**: how far the device is rolled from its neutral position tilts the world, the picture untouched. **Rate**: turning the device tilts, and the tilt stays when the turning stops and fades over a few seconds; turning slower than 20° a second adds nothing, so the device can go back to a comfortable hold |
+| Full tilt at (`input.tilt_full`) | 12° | Sensitivity: the roll for the world's full tilt. Between the dead zone and this, L or R is pressed for part of the frames, which the game turns into part of its tilt |
+| Tilt dead zone (`input.tilt_dead_zone`) | 4° | Roll before anything happens; the button lets go 1.5° inside it, so a hand at the edge does not flicker |
+| Invert tilt (`input.tilt_invert`) | Off | Rolling left tilts right |
+| Jump button (`input.jump_button`) | L3 | One gamepad button that presses L and R together while held: `l3` (the left stick's click), `south`, `east`, `west`, `north` or `off`. L3 takes nothing from the game, which has no stick click; LocoRoco 2 reads every face button somewhere (○ next to L and R in its play code, × as its confirm button, △ and □ with START and SELECT), and a face button chosen here no longer presses its own button. The keyboard's **Jump** is Space (Keyboard and mouse) |
+| Re-centre tilt | | Makes the current hold neutral. It also happens when the game starts, when the menu closes, and with **R3** on a gamepad |
+
+Jumping with tilt controls on: L and R pressed together, the jump button or the keyboard's Jump always reach the game as both, whatever the device's roll. A single shoulder button tilts that way on its own and the motion waits until it is released.
+
+**Angle + level horizon** is no longer in the menu: it did not play well. `PURUN_TILT_MODE=horizon` (or `input.tilt_mode=level` in settings.ini) still turns it on: the picture is turned back against the game's own tilt, up to `input.tilt_level_limit` degrees (10 by default, at most 30), so the ground stays still on the screen. The menu shows it by name and leaves it for Angle or Rate.
+
+Where the motion comes from, which the log names at start (`[tilt] ...`) and the menu shows under *Motion from*:
+
+- **A gamepad** with motion sensors, through SDL: DualShock 4, DualSense, Switch Pro and others SDL reads the gyroscope of.
+- **A phone or tablet**: its own accelerometer and gyroscope, when no gamepad with sensors is connected, turned with the screen.
+- **A Steam Deck**, whether Steam Input is on or off for Purun. Under Steam Input the game gets Steam's virtual pad, which has no motion sensors, so the Deck's gyroscope and accelerometer are read straight from its controller beside Steam; the buttons still come through Steam. Steam keeps the motion sensors off while a game's layout does not use them, so Purun switches them on while Tilt with motion is on and back off afterwards. The log shows `[tilt] Steam Deck controller /dev/hidrawN: reading its gyroscope and accelerometer beside Steam Input`, and the menu `Steam Deck: gyroscope and accelerometer`. `PURUN_TILT_DECK=0` leaves the controller alone. Leave the gyroscope unmapped (*None*) in Purun's Steam controller layout, or Steam turns tilting into input of its own as well.
+- **A computer** has none, and with a pad without sensors tilt controls do nothing.
+
+Tilt controls have been tried with synthetic sensor data (the input script's `tilt` and `gyro` steps) on macOS. On a Steam Deck the sensor readings were checked outside the game; tilting in the game has not been tried yet, nor on a real gamepad or phone.
 
 ## Reporting bugs
 
