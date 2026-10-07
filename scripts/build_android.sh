@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build an arm64 Android APK using PortableKit's shared packaging.
-# Requires ANDROID_HOME, an NDK, a JDK, CMake, Ninja, curl and glslangValidator.
+# Requires ANDROID_HOME, an NDK, a JDK, CMake, Ninja, Python 3, curl and glslangValidator.
 # Prepare the European game's executable first; no game files enter the APK.
 # Optional: ANDROID_NDK, PURUN_EBOOT, JOBS, KEYSTORE, KEYSTORE_PASS, KEY_ALIAS.
 set -euo pipefail

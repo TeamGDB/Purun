@@ -69,7 +69,7 @@ PortableKit's [`docs/BUILDING.md`](https://github.com/TeamGDB/PortableKit/blob/m
 
 The Android build targets arm64 devices with Android 10 or newer and Vulkan
 1.1. Install the Android SDK (platform 35 and build-tools), an NDK, a JDK,
-CMake, Ninja, curl and glslangValidator. Prepare the game's executable using
+CMake, Ninja, Python 3, curl and glslangValidator. Prepare the game's executable using
 the desktop installer first, as above, or set `PURUN_EBOOT` to an already
 prepared `EBOOT.ELF`.
 
