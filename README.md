@@ -12,9 +12,9 @@ There is an interpreter too, but it is a development tool: it runs code the reco
 
 ## Status
 
-**The first level plays through, saves, and continues after a restart**, recompiled, at full speed — on macOS with Apple Silicon, the only platform it has been run on.
+**The first level plays through, saves, and continues after a restart**, recompiled, at full speed and at **60 frames a second**, the game's own rate — on macOS with Apple Silicon, the only platform it has been run on.
 
-It installs from a disc image, boots, shows its logos, title intro and opening movie, and starts a new game. The first level plays to its goal, the game saves, and after a restart Continue picks up at the second level. Nothing past the start of the second level has been tried. Known problems include a hole through the middle of the main character, seams in speech bubbles, a frame rate that looks lower than it should, and sound effects that may clip; [`docs/MISSING.md`](docs/MISSING.md) has the whole list, most blocking first, and the [issues](https://github.com/TeamGDB/Purun/issues) are the work.
+It installs from a disc image, boots, shows its logos, title intro and opening movie, and starts a new game. The first level plays to its goal, the game saves, and after a restart Continue picks up at the second level. Nothing past the start of the second level has been played through. The hole through the main character, the seams in speech bubbles and the 20 frames a second are fixed; on a display faster than 60 Hz, Video > Frame rate blends frames up to 90, 120 or the display's rate. [`docs/MISSING.md`](docs/MISSING.md) has what is still known to be wrong, most blocking first, and the [issues](https://github.com/TeamGDB/Purun/issues) are the work.
 
 | | |
 | --- | --- |
@@ -25,7 +25,11 @@ It installs from a disc image, boots, shows its logos, title intro and opening m
 | Addresses the recompiler cannot lower | the game's own 154 `break` traps, and nothing else |
 | Falls back to the interpreter | never, from boot into the first level (`PSPRECOMP_NO_INTERPRETER=1`) |
 
-## What you need
+## Playing a release
+
+A release is a macOS disk image (Apple Silicon, macOS 13 or newer) with `Purun.app` and a read-me: drag Purun into Applications, allow it once in System Settings > Privacy & Security (it is signed ad hoc, not notarized), and pick your disc image at the first start. Nothing else is needed: no build tools, no recompiling. Linux and Android releases can be packed with PortableKit's scripts but have not been made or tried yet.
+
+## What you need to build it
 
 - **The game**, as an ISO image of your own UMD disc of the European release (`UCES-01059`). Make it with your own PSP — for example with a homebrew UMD dumping tool, or a custom firmware's USB mode that exposes the disc — and copy it to your computer. Other releases are refused by the installer, which checks the disc id and the SHA-256 of the executable. Nobody here can give you a copy or tell you where to get one.
 - **Time and memory for the first build.** The recompiled game is about 190 large C++ files; compiling them takes about 40 minutes on an M1 at `-j2`, and each one needs more than a gigabyte of memory. With `ccache` installed, later builds take seconds.
@@ -61,6 +65,33 @@ out/bin/PurunNative
 
 PortableKit's [`docs/BUILDING.md`](https://github.com/TeamGDB/PortableKit/blob/main/docs/BUILDING.md) explains where the time goes, and [`docs/BRINGING_UP_A_GAME.md`](https://github.com/TeamGDB/PortableKit/blob/main/docs/BRINGING_UP_A_GAME.md) how to work on a port that does not run yet.
 
+### Android
+
+The Android build targets arm64 devices with Android 10 or newer and Vulkan
+1.1. Install the Android SDK (platform 35 and build-tools), an NDK, a JDK,
+CMake, Ninja, Python 3, curl and glslangValidator. Prepare the game's executable using
+the desktop installer first, as above, or set `PURUN_EBOOT` to an already
+prepared `EBOOT.ELF`.
+
+```bash
+export ANDROID_HOME=/path/to/Android/sdk
+export ANDROID_NDK="$ANDROID_HOME/ndk/<installed-version>"
+scripts/build_android.sh
+```
+
+The script downloads pinned SDL3 and font sources, generates the AOT corpus
+if needed, builds SDL3 and the game with the NDK, and packages
+`out/android/dist/Purun-android-arm64.apk`. It verifies the signature,
+alignment and native imports against Android 10. Keep `JOBS` low (default
+2); the first AOT compilation is slow. No disc image, executable or saves
+are packed into the APK: install your own image through the app's setup.
+
+Without `KEYSTORE`, `KEYSTORE_PASS` and `KEY_ALIAS`, PortableKit creates a
+local development signing key in the native build directory. Keep that key
+to install later builds over this one without uninstalling. Use your own
+key for distribution. Device startup and gameplay have not been verified
+for this build.
+
 ### Where it keeps things
 
 Settings, the prepared executable, the disc image (unless installed in place) and the saves live in one data directory:
@@ -86,6 +117,54 @@ Every switch takes the `PURUN_` prefix, so Purun runs beside another port withou
 | `PURUN_LIST_STUBS=1` | List the system calls the game imports that nothing implements |
 | `PURUN_TRACE_*` | Log one subsystem: `GE`, `KERNEL`, `IO`, `SAVEDATA`, `AUDIO`, `ATRAC`, `MPEG`, `PAD`, `FONT` and more |
 | `PSPRECOMP_NO_INTERPRETER=1` | Stop instead of falling back to the interpreter, naming the address |
+| `PURUN_TILT=1`, `PURUN_TILT_MODE=angle\|rate\|horizon`, `PURUN_TILT_FULL`, `PURUN_TILT_DEAD_ZONE` | Tilt controls for this run, overriding the menu (see below) |
+| `PURUN_TILT_DECK=0` | Do not read a Steam Deck's motion sensors directly |
+| `PURUN_TILT_LEVEL_FROM=device` | Angle + level horizon turns the picture against the device's roll, keeping the game's horizon level with the real one, as it first did |
+| `PURUN_STALL_WATCHDOG=0` | Turn off the stall watchdog, which writes every emulated thread's state to the log when the game has drawn nothing for 5 s outside the menu (`=N` waits N seconds) |
+| `PURUN_TRACE_TILT` | Log the device's roll, its neutral and what it presses (`PURUN_TRACE_PAD` includes it) |
+
+### Keyboard
+
+Purun starts with a keyboard for tilting, not the framework's W A S D and mouse camera (LocoRoco has no camera, so the mouse is off):
+
+| Control | Keys |
+| --- | --- |
+| D-pad | the arrow keys |
+| Tilt left (L), tilt right (R) | A or Q, D or E |
+| Jump (L and R together) | Space |
+| ○ (burst apart, gather again) | Left Shift or Right Shift |
+| × (confirm) | Enter or Z |
+| △, □ | C, X |
+| START, SELECT | Tab or P, Backspace |
+
+The stick is not bound: the game's menus and map take the D-pad as well, and the stick does not tilt the world. Every key can be changed under **Controls > Keyboard and mouse**, and a binding already in `settings.ini` stays as it is: only controls the file does not name start from these, and never with a key another control already has there.
+
+### Tilt controls
+
+LocoRoco is played by tilting the world: hold L or R to tilt it, both to jump. With **Controls > Tilt controls > Tilt with motion** on, tilting the device does the same: a gamepad with a gyroscope (DualShock 4, DualSense, Switch Pro, a Steam Deck), or a phone itself. The buttons keep working; a shoulder button you press takes over from the tilt, so a tilt never turns into an accidental jump, and jumping stays on L and R together. It is off by default.
+
+| Setting (settings.ini) | Default | What it does |
+| --- | --- | --- |
+| Tilt with motion (`input.tilt`) | Off | Tilt the world by tilting the device |
+| Gyro mode (`input.tilt_mode`) | Angle | **Angle**: how far the device is rolled from its neutral position tilts the world, the picture untouched. **Rate**: turning the device tilts, and the tilt stays when the turning stops and fades over a few seconds; turning slower than 20° a second adds nothing, so the device can go back to a comfortable hold |
+| Full tilt at (`input.tilt_full`) | 12° | Sensitivity: the roll for the world's full tilt. Between the dead zone and this, L or R is pressed for part of the frames, which the game turns into part of its tilt |
+| Tilt dead zone (`input.tilt_dead_zone`) | 4° | Roll before anything happens; the button lets go 1.5° inside it, so a hand at the edge does not flicker |
+| Invert tilt (`input.tilt_invert`) | Off | Rolling left tilts right |
+| Jump button (`input.jump_button`) | L3 | One gamepad button that presses L and R together while held: `l3` (the left stick's click), `south`, `east`, `west`, `north` or `off`. L3 takes nothing from the game, which has no stick click; LocoRoco 2 reads every face button somewhere (○ next to L and R in its play code, × as its confirm button, △ and □ with START and SELECT), and a face button chosen here no longer presses its own button. The keyboard's **Jump** is Space (Keyboard and mouse) |
+| Re-centre tilt | | Makes the current hold neutral. It also happens when the game starts, when the menu closes, and with **R3** on a gamepad |
+
+Jumping with tilt controls on: L and R pressed together, the jump button or the keyboard's Jump always reach the game as both, whatever the device's roll. A single shoulder button tilts that way on its own and the motion waits until it is released.
+
+**Angle + level horizon** is no longer in the menu: it did not play well. `PURUN_TILT_MODE=horizon` (or `input.tilt_mode=level` in settings.ini) still turns it on: the picture is turned back against the game's own tilt, up to `input.tilt_level_limit` degrees (10 by default, at most 30), so the ground stays still on the screen. The menu shows it by name and leaves it for Angle or Rate.
+
+Where the motion comes from, which the log names at start (`[tilt] ...`) and the menu shows under *Motion from*:
+
+- **A gamepad** with motion sensors, through SDL: DualShock 4, DualSense, Switch Pro and others SDL reads the gyroscope of.
+- **A phone or tablet**: its own accelerometer and gyroscope, when no gamepad with sensors is connected, turned with the screen.
+- **A Steam Deck**, whether Steam Input is on or off for Purun. Under Steam Input the game gets Steam's virtual pad, which has no motion sensors, so the Deck's gyroscope and accelerometer are read straight from its controller beside Steam; the buttons still come through Steam. Steam keeps the motion sensors off while a game's layout does not use them, so Purun switches them on while Tilt with motion is on and back off afterwards. The log shows `[tilt] Steam Deck controller /dev/hidrawN: reading its gyroscope and accelerometer beside Steam Input`, and the menu `Steam Deck: gyroscope and accelerometer`. `PURUN_TILT_DECK=0` leaves the controller alone. Leave the gyroscope unmapped (*None*) in Purun's Steam controller layout, or Steam turns tilting into input of its own as well.
+- **A computer** has none, and with a pad without sensors tilt controls do nothing.
+
+Tilt controls have been tried with synthetic sensor data (the input script's `tilt` and `gyro` steps) on macOS. On a Steam Deck the sensor readings were checked outside the game; tilting in the game has not been tried yet, nor on a real gamepad or phone.
 
 ## Reporting bugs
 
