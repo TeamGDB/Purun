@@ -1,10 +1,12 @@
 # Third-party notices
 
-Purun is distributed under the MIT License (`Purun-LICENSE.txt`), and so is PortableKit, the framework it is built on (`PortableKit-LICENSE.txt`). Its released builds also contain the third-party software listed here, each under its own license. The license texts are in the same directory as this file: `licenses/` in the tarball, `/app/share/licenses/io.github.teamgdb.Purun/` (also `/app/lib/purun/licenses/`) in the Flatpak, and `Purun.app/Contents/Resources/licenses/` on macOS.
+Purun is distributed under the MIT License (`Purun-LICENSE.txt`), and so is PortableKit, the framework it is built on (`PortableKit-LICENSE.txt`). Its released builds also contain the third-party software listed here, each under its own license. The license texts are in the same directory as this file: `licenses/` in the tarball, `/app/share/licenses/io.github.teamgdb.Purun/` (also `/app/lib/purun/licenses/`) in the Flatpak, `Purun.app/Contents/Resources/licenses/` on macOS, and `assets/licenses/` in the Android APK.
 
 Purun does not include any game assets or original game files: no disc image, no copy of the game's executable or data, and no textures, models, audio or video from the game. You must provide the files from your own legally obtained copy of the game.
 
 ## Compiled into the program
+
+In Android APKs the game's MIT license is named `Game-LICENSE.txt`.
 
 ### Dear ImGui 1.92.9b
 
@@ -54,6 +56,7 @@ Decodes the game's ATRAC3 and ATRAC3plus audio and its H.264 movies. FFmpeg is l
   ```
 
 - On macOS also with `--install-name-dir=@rpath`, which only sets where the libraries expect each other.
+- On Android the libraries are `libavcodec.so` and `libavutil.so`, built with the NDK for arm64 and Android 10, with 16 KiB page alignment. SDL is `libSDL3.so`; Vulkan comes from the device.
 - Built by the build itself, `cmake/FFmpeg.cmake` in PortableKit (<https://github.com/TeamGDB/PortableKit>), which pins the version, checksum and configuration above.
 
 **Source offer.** The exact FFmpeg source archive above is published on the same release page as every Purun build that contains it. For at least three years after we distribute a build, we will also provide that source to anyone who asks through the project's issue tracker, <https://github.com/TeamGDB/Purun/issues>, at no more than the cost of providing it.

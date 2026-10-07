@@ -65,6 +65,33 @@ out/bin/PurunNative
 
 PortableKit's [`docs/BUILDING.md`](https://github.com/TeamGDB/PortableKit/blob/main/docs/BUILDING.md) explains where the time goes, and [`docs/BRINGING_UP_A_GAME.md`](https://github.com/TeamGDB/PortableKit/blob/main/docs/BRINGING_UP_A_GAME.md) how to work on a port that does not run yet.
 
+### Android
+
+The Android build targets arm64 devices with Android 10 or newer and Vulkan
+1.1. Install the Android SDK (platform 35 and build-tools), an NDK, a JDK,
+CMake, Ninja, curl and glslangValidator. Prepare the game's executable using
+the desktop installer first, as above, or set `PURUN_EBOOT` to an already
+prepared `EBOOT.ELF`.
+
+```bash
+export ANDROID_HOME=/path/to/Android/sdk
+export ANDROID_NDK="$ANDROID_HOME/ndk/<installed-version>"
+scripts/build_android.sh
+```
+
+The script downloads pinned SDL3 and font sources, generates the AOT corpus
+if needed, builds SDL3 and the game with the NDK, and packages
+`out/android/dist/Purun-android-arm64.apk`. It verifies the signature,
+alignment and native imports against Android 10. Keep `JOBS` low (default
+2); the first AOT compilation is slow. No disc image, executable or saves
+are packed into the APK: install your own image through the app's setup.
+
+Without `KEYSTORE`, `KEYSTORE_PASS` and `KEY_ALIAS`, PortableKit creates a
+local development signing key in the native build directory. Keep that key
+to install later builds over this one without uninstalling. Use your own
+key for distribution. Device startup and gameplay have not been verified
+for this build.
+
 ### Where it keeps things
 
 Settings, the prepared executable, the disc image (unless installed in place) and the saves live in one data directory:

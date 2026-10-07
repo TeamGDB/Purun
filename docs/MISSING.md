@@ -4,6 +4,10 @@ What this port does not have yet, most blocking first. Everything here was measu
 
 Platform for everything below: macOS on Apple Silicon, Vulkan through MoltenVK.
 
+Android packaging is available through `scripts/build_android.sh` for arm64,
+Android 10 and Vulkan 1.1. Startup, touch controls, tilt sensors, audio,
+movies, saves and gameplay on an Android device have not been verified.
+
 ## Where the port is
 
 **The first level can be played through, saved, and continued after a restart**, in the recompiled build at full speed. In order:
