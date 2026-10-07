@@ -4,9 +4,12 @@ What this port does not have yet, most blocking first. Everything here was measu
 
 Platform for everything below: macOS on Apple Silicon, Vulkan through MoltenVK.
 
-Android packaging is available through `scripts/build_android.sh` for arm64,
-Android 10 and Vulkan 1.1. Startup, touch controls, tilt sensors, audio,
-movies, saves and gameplay on an Android device have not been verified.
+The arm64 Android AOT APK builds through `scripts/build_android.sh` with
+NDK 28.2.13676358, for Android 10 and Vulkan 1.1. APK signing, Android 10
+native imports, ZIP alignment and 16 KiB ELF segment alignment were checked.
+The full framework build and its 21 tests passed on macOS Apple Silicon.
+Startup, touch controls, tilt sensors, audio, movies, saves and gameplay on
+an Android device have not been verified.
 
 ## Where the port is
 
